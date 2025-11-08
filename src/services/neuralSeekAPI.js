@@ -2,32 +2,35 @@
  * NeuralSeek API Integration via Backend Proxy
  */
 
-// Use backend proxy in development, Vercel function in production
-// In production (Vercel), use relative path to serverless function
-// In development, use localhost backend or override with VITE_API_URL
+// Get API URL - check at runtime for proper environment detection
 const getApiUrl = () => {
-  // If explicitly set, use that
+  // If explicitly set via environment variable, use that
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
   
-  // If running on localhost, use local backend
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3001/api/analyze';
+  // Check if we're in production mode (Vite sets PROD=true in production builds)
+  // In production builds, PROD will be true, DEV will be false
+  if (import.meta.env.PROD) {
+    // In production, always use relative path (Vercel serverless function)
+    return '/api/analyze';
   }
   
-  // Otherwise, use relative path (works with Vercel serverless function)
-  return '/api/analyze';
+  // In development mode, use local backend
+  // This only runs when using npm run dev locally
+  return 'http://localhost:3001/api/analyze';
 };
-
-const API_URL = getApiUrl();
 
 /**
  * Analyze call transcript using NeuralSeek agent via proxy
  */
 export async function analyzeCallTranscript(transcript, emailRecipients = '') {
   try {
-    const response = await fetch(API_URL, {
+    // Get API URL at runtime to ensure correct environment detection
+    const apiUrl = getApiUrl();
+    console.log('Using API URL:', apiUrl); // Debug log
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
