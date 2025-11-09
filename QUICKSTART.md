@@ -35,7 +35,9 @@ Open `http://localhost:5173` in Chrome or Edge and start using Rize!
 
 **API not working?**
 - Make sure backend is running on port 3001
-- Check `backend/.env` has correct API credentials
+- Check `backend/.env` has correct API credentials:
+  - `NEURALSEEK_API_KEY` - For AI analysis
+  - `ASSEMBLYAI_API_KEY` - For real-time transcription (get one free at https://www.assemblyai.com/)
 - Check browser console for errors
 
 **CORS errors?**
@@ -45,7 +47,10 @@ Open `http://localhost:5173` in Chrome or Edge and start using Rize!
 ## 📦 Production Deployment
 
 For Vercel:
-1. Deploy normally - serverless function in `/api/analyze.js` handles everything
-2. Set `NEURALSEEK_API_KEY` and `NEURALSEEK_AGENT` in Vercel dashboard
+1. Deploy normally - serverless functions in `/api/` handle everything
+2. Set environment variables in Vercel dashboard:
+   - `NEURALSEEK_API_KEY` - For AI analysis
+   - `NEURALSEEK_AGENT` - Agent name (default: `pehla_agent`)
+   - `ASSEMBLYAI_API_KEY` - For real-time transcription
 3. No separate backend needed!
 

@@ -8,11 +8,15 @@ export function useAudioRecorder() {
   const recorderRef = useRef(null);
   const timerRef = useRef(null);
   const pausedTimeRef = useRef(0);
+  const audioStreamRef = useRef(null); // Store the audio stream for transcription
 
-  const startRecording = async (micDeviceId = null) => {
+  const startRecording = async (micDeviceId = null, onSystemAudioPrompt = null) => {
     try {
       recorderRef.current = new DualAudioRecorder();
-      await recorderRef.current.startRecording(micDeviceId);
+      const result = await recorderRef.current.startRecording(micDeviceId, onSystemAudioPrompt);
+      
+      // Store the audio stream for transcription
+      audioStreamRef.current = result.audioStream;
       
       setIsRecording(true);
       setIsPaused(false);
@@ -23,7 +27,7 @@ export function useAudioRecorder() {
         setRecordingTime(prev => prev + 1);
       }, 1000);
       
-      return true;
+      return result; // Returns { hasSystemAudio: true/false, audioStream: MediaStream }
     } catch (error) {
       console.error('Failed to start recording:', error);
       throw error;
@@ -66,6 +70,7 @@ export function useAudioRecorder() {
       setIsPaused(false);
       pausedTimeRef.current = 0;
       setRecordingTime(0);
+      audioStreamRef.current = null; // Clear the audio stream
       
       return audioBlob;
     } catch (error) {
@@ -81,7 +86,8 @@ export function useAudioRecorder() {
     startRecording,
     pauseRecording,
     resumeRecording,
-    stopRecording
+    stopRecording,
+    getAudioStream: () => audioStreamRef.current // Get the current audio stream
   };
 }
 

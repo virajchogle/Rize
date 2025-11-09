@@ -1,49 +1,70 @@
-import { useEffect } from 'react';
-import { Mic, Square, Radio, Pause, Play } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Mic, Square, Radio, Pause, Play, Volume2, AlertCircle } from 'lucide-react';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 
 export default function CallRecorder({ onTranscriptUpdate }) {
   const { isRecording, isPaused, recordingTime, startRecording, pauseRecording, resumeRecording, stopRecording } = useAudioRecorder();
-  const { transcript, startListening, stopListening, setTranscript } = useSpeechRecognition();
+  const { transcript, isTranscribing, transcribeAudio, setTranscript } = useSpeechRecognition();
+  const [showSystemAudioPrompt, setShowSystemAudioPrompt] = useState(false);
+  const [hasSystemAudio, setHasSystemAudio] = useState(false);
 
-  // Update transcript in real-time
+  // Update transcript when it changes
   useEffect(() => {
-    if (isRecording && transcript) {
+    if (transcript) {
       onTranscriptUpdate?.(transcript);
     }
-  }, [transcript, isRecording, onTranscriptUpdate]);
+  }, [transcript, onTranscriptUpdate]);
 
   const handleStart = async () => {
     try {
       // Clear previous transcript
       setTranscript('');
-      await startRecording();
-      startListening();
+      setShowSystemAudioPrompt(false);
+      setHasSystemAudio(false);
+      
+      // Start recording with system audio prompt callback
+      const result = await startRecording(null, () => {
+        setShowSystemAudioPrompt(true);
+      });
+      
+      // Check if system audio was captured
+      if (result && result.hasSystemAudio) {
+        setHasSystemAudio(true);
+      }
+      setShowSystemAudioPrompt(false);
     } catch (error) {
-      alert('Failed to start recording. Please allow microphone access.');
+      setShowSystemAudioPrompt(false);
+      if (error.message.includes('System audio')) {
+        alert('⚠️ System audio is required to record calls.\n\nWhen prompted, please:\n1. Select "Entire Screen" or "Window"\n2. Make sure "Share audio" is checked/enabled\n3. Choose the window where your call is (Zoom, Google Meet, etc.)\n4. Click "Share"\n\nThis captures both your voice and the call audio.');
+      } else {
+        alert('Failed to start recording. Please allow microphone access.');
+      }
     }
   };
 
   const handlePause = () => {
     pauseRecording();
-    stopListening();
   };
 
   const handleResume = () => {
     resumeRecording();
-    startListening();
   };
 
   const handleStop = async () => {
     try {
-      await stopRecording();
-      stopListening();
-      if (onTranscriptUpdate) {
-        onTranscriptUpdate(transcript);
+      // Stop recording and get the audio blob
+      const audioBlob = await stopRecording();
+      
+      // Transcribe the entire recording
+      if (audioBlob && audioBlob.size > 0) {
+        await transcribeAudio(audioBlob);
+      } else {
+        alert('No audio was recorded.');
       }
     } catch (error) {
-      alert('Failed to stop recording.');
+      console.error('Error stopping recording:', error);
+      alert(`Failed to process recording: ${error.message}`);
     }
   };
 
@@ -138,6 +159,55 @@ export default function CallRecorder({ onTranscriptUpdate }) {
             <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
             Recording paused
           </p>
+        )}
+
+        {isTranscribing && (
+          <p className="text-sm text-blue-600 flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            Transcribing recording... This may take a moment.
+          </p>
+        )}
+
+        {/* System Audio Prompt */}
+        {showSystemAudioPrompt && (
+          <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Volume2 className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900 mb-1">
+                  Share System Audio
+                </p>
+                <p className="text-xs text-blue-700">
+                  A browser prompt will appear. Please select <strong>"Entire Screen"</strong> or <strong>"Window"</strong> and make sure <strong>"Share audio"</strong> is enabled to capture call audio (the other person's voice from Zoom, Google Meet, etc.).
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* System Audio Status */}
+        {isRecording && hasSystemAudio && (
+          <p className="text-xs text-green-600 flex items-center gap-2">
+            <Volume2 className="w-4 h-4" />
+            Recording: Your voice + Call audio
+          </p>
+        )}
+
+        {/* Info Box */}
+        {!isRecording && !isPaused && !isTranscribing && (
+          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-gray-500 mt-0.5" />
+              <div className="text-xs text-gray-600">
+                <p className="font-medium mb-1">Recording both sides of the call:</p>
+                <ul className="list-disc list-inside space-y-1 text-gray-500">
+                  <li>Your microphone (your voice)</li>
+                  <li>System audio (call audio - other person's voice)</li>
+                </ul>
+                <p className="mt-2 text-gray-400">Works best in Chrome/Edge. Select "Entire Screen" or "Window" with audio enabled to capture Zoom/Meet calls. The transcript will be generated after you stop recording.</p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

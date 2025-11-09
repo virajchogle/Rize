@@ -2,6 +2,12 @@
   "functions": {
     "api/analyze.js": {
       "maxDuration": 30
+    },
+    "api/assemblyai-token.js": {
+      "maxDuration": 10
+    },
+    "api/assemblyai-transcribe.js": {
+      "maxDuration": 60
     }
   }
 }

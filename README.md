@@ -5,7 +5,7 @@ A clean, simple web application that records calls, transcribes speech to text i
 ## Features
 
 - 🎤 **Dual Audio Recording** - Records both microphone and system audio
-- 📝 **Real-time Transcription** - Uses Web Speech API for live transcription
+- 📝 **Real-time Transcription** - Uses AssemblyAI for real-time transcription of both sides of the call
 - 🤖 **AI Analysis** - Analyzes calls using NeuralSeek AI
 - 📧 **Auto Email Generation** - Creates follow-up emails automatically
 
@@ -93,8 +93,9 @@ vercel
 ```
 
 4. **Set environment variables in Vercel dashboard:**
-   - `NEURALSEEK_API_KEY` - Your API key
+   - `NEURALSEEK_API_KEY` - Your NeuralSeek API key
    - `NEURALSEEK_AGENT` - Agent name (default: `pehla_agent`)
+   - `ASSEMBLYAI_API_KEY` - Your AssemblyAI API key (get one free at https://www.assemblyai.com/)
 
 5. Update frontend `.env` for production:
    - Set `VITE_API_URL=/api/analyze` (or leave unset to use default)
@@ -126,7 +127,8 @@ npm run build
 
 ### Backend (backend/.env)
 - `NEURALSEEK_API_URL` - NeuralSeek API endpoint
-- `NEURALSEEK_API_KEY` - Your API key
+- `NEURALSEEK_API_KEY` - Your NeuralSeek API key
 - `NEURALSEEK_AGENT` - Agent name
+- `ASSEMBLYAI_API_KEY` - Your AssemblyAI API key (get one free at https://www.assemblyai.com/)
 - `PORT` - Backend server port (default: 3001)
 

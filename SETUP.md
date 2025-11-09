@@ -40,7 +40,7 @@
 ## Features
 
 ✅ **Dual Audio Recording** - Records microphone + system audio  
-✅ **Real-time Transcription** - Live speech-to-text using Web Speech API  
+✅ **Real-time Transcription** - Live speech-to-text using AssemblyAI (transcribes both sides of the call)  
 ✅ **AI Analysis** - NeuralSeek AI analyzes the transcript  
 ✅ **Auto Email Generation** - Creates follow-up emails automatically  
 
@@ -64,7 +64,9 @@
 
 ### API errors?
 - **Make sure the backend proxy is running** on port 3001
-- Verify your API key in `backend/.env` file
+- Verify your API keys in `backend/.env` file:
+  - `NEURALSEEK_API_KEY` - For AI analysis
+  - `ASSEMBLYAI_API_KEY` - For real-time transcription (get one free at https://www.assemblyai.com/)
 - Check that the API endpoint URL is correct
 - Ensure network connectivity
 - Check browser console for CORS errors (if backend isn't running)
