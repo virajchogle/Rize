@@ -6,16 +6,14 @@ Each feature calls a specific NeuralSeek agent. Update the agent names in `src/s
 
 | Feature ID | Feature Name | Agent Name | Status |
 |------------|--------------|------------|--------|
-| `summarize` | Summarize | `summarize_agent` | ⚠️ Update with actual agent name |
-| `generate-email` | Generate Email | `pehla_agent` | ✅ Correct |
+| `summarize` | Summarize | `summary_agent` | ✅ Active |
+| `generate-email` | Generate Email | `email_agent` | ✅ Active |
 | `heatmap` | Talk Track Heatmap | `heatmap_agent` | ✅ Confirmed |
-| `feature-requests` | Feature Highrequest | `feature_request_agent` | ⚠️ Update with actual agent name |
-| `call-dashboard` | Single Call Review | `dashboard_agent` | ⚠️ Update with actual agent name |
-| `call-notes` | Call Notes to Sheet | `notes_agent` | ⚠️ Update with actual agent name |
-| `call-prep` | Call Preparation | `prep_agent` | ⚠️ Update with actual agent name |
-| `call-scoring` | Call Scoring | `scoring_agent` | ⚠️ Update with actual agent name |
-| `pipeline-analyzer` | Pipeline Momentum | `pipeline_agent` | ⚠️ Update with actual agent name |
-| `pii-wipe` | PII Wipe & Analyze | `pii_agent` | ⚠️ Update with actual agent name |
+| `feature-requests` | Feature Highrequest | `feedback_report_agent` | ✅ Active |
+| `call-dashboard` | Single Call Review | `singleCallAgent` | ✅ Active |
+| `call-scoring` | Call Scoring | `call_scoring_agent` | ✅ Active |
+| `pipeline-analyzer` | Pipeline Momentum | `revenue_intelligence_agent` | ✅ Active |
+| `pii-wipe` | PII Wipe & Analyze | `listener_agent` | ✅ Active |
 
 ## How to Update Agent Names
 
@@ -42,7 +40,18 @@ Each feature calls a specific NeuralSeek agent. Update the agent names in `src/s
 
 ## Notes
 
-- `generate-email` uses `pehla_agent` (the original working agent)
-- `heatmap` uses `dusra_agent` (confirmed correct)
-- All other agent names are placeholders - update them with your actual NeuralSeek agent names
+- `summarize` uses `summary_agent` (extracts summary, key points, and action items from call transcripts)
+- `generate-email` uses `email_agent` (dedicated email generation agent)
+- `heatmap` uses `heatmap_agent` (confirmed correct)
+- `feature-requests` uses `feedback_report_agent` (comprehensive feedback analysis with leaderboard)
+- `call-dashboard` uses `singleCallAgent` (comprehensive single call review with summary, sentiment, topics, actions, and talk-listen ratio)
+- `call-scoring` uses `call_scoring_agent` (performance scoring with justification and coaching suggestions)
+- `pii-wipe` uses `listener_agent` (PII redaction with structured call summary by category)
+- `pipeline-analyzer` uses `revenue_intelligence_agent` (revenue intelligence with deal activity, velocity metrics, forecasts - accepts CSV data via callTranscript parameter)
+- The backend automatically uses the agent specified in the frontend configuration
+- Fallback order: request agent → NEURALSEEK_AGENT env variable → pehla_agent
+
+## Special Input Requirements
+
+- **`pipeline-analyzer`**: This agent analyzes CSV data containing deal information (deal names, stages, amounts, close dates, activities). Upload CSV files through the UI, and the CSV data is passed as `callTranscript` (just like all other agents). This feature does NOT auto-process on load - you must upload a CSV file to trigger analysis.
 

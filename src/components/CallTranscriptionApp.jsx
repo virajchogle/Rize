@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import CallRecorder from './CallRecorder';
 import TranscriptDisplay from './TranscriptDisplay';
@@ -7,11 +8,90 @@ import FeatureView from './FeatureView';
 import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
 
-export default function CallTranscriptionApp({ onBack }) {
+// Import icons
+import { Mail, FileText, Map, TrendingUp, BarChart3, FileSpreadsheet, Calendar, Award, LineChart, Shield } from 'lucide-react';
+
+// Feature definitions for lookup
+const features = [
+  {
+    id: 'summarize',
+    title: 'Summarize',
+    icon: FileText,
+    color: 'from-blue-500 to-blue-600',
+    iconColor: 'text-blue-600'
+  },
+  {
+    id: 'generate-email',
+    title: 'Generate Email',
+    icon: Mail,
+    color: 'from-green-500 to-emerald-600',
+    iconColor: 'text-green-600'
+  },
+  {
+    id: 'heatmap',
+    title: 'Talk Track Heatmap',
+    icon: Map,
+    color: 'from-orange-500 to-orange-600',
+    iconColor: 'text-orange-600'
+  },
+  {
+    id: 'feature-requests',
+    title: 'Feature Highrequest',
+    icon: TrendingUp,
+    color: 'from-purple-500 to-purple-600',
+    iconColor: 'text-purple-600'
+  },
+  {
+    id: 'call-dashboard',
+    title: 'Single Call Review',
+    icon: BarChart3,
+    color: 'from-indigo-500 to-indigo-600',
+    iconColor: 'text-indigo-600'
+  },
+  {
+    id: 'call-notes',
+    title: 'Call Notes to Sheet',
+    icon: FileSpreadsheet,
+    color: 'from-teal-500 to-teal-600',
+    iconColor: 'text-teal-600'
+  },
+  {
+    id: 'call-prep',
+    title: 'Call Preparation',
+    icon: Calendar,
+    color: 'from-pink-500 to-pink-600',
+    iconColor: 'text-pink-600'
+  },
+  {
+    id: 'call-scoring',
+    title: 'Call Scoring',
+    icon: Award,
+    color: 'from-yellow-500 to-yellow-600',
+    iconColor: 'text-yellow-600'
+  },
+  {
+    id: 'pipeline-analyzer',
+    title: 'Pipeline Momentum',
+    icon: LineChart,
+    color: 'from-cyan-500 to-cyan-600',
+    iconColor: 'text-cyan-600'
+  },
+  {
+    id: 'pii-wipe',
+    title: 'PII Wipe & Analyze',
+    icon: Shield,
+    color: 'from-red-500 to-red-600',
+    iconColor: 'text-red-600'
+  }
+];
+
+export default function CallTranscriptionApp({ onBack, initialFeature }) {
   const [transcript, setTranscript] = useState('');
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [featureResults, setFeatureResults] = useState({}); // Cache results per feature
   const { toast, showToast, hideToast } = useToast();
+  const { featureId } = useParams();
+  const navigate = useNavigate();
 
   // Load transcript from localStorage on mount
   useEffect(() => {
@@ -20,6 +100,17 @@ export default function CallTranscriptionApp({ onBack }) {
       setTranscript(savedTranscript);
     }
   }, []);
+
+  // Handle initial feature or URL param feature
+  useEffect(() => {
+    const targetFeatureId = featureId || initialFeature;
+    if (targetFeatureId) {
+      const feature = features.find(f => f.id === targetFeatureId);
+      if (feature) {
+        setSelectedFeature(feature);
+      }
+    }
+  }, [featureId, initialFeature]);
 
   // Save transcript to localStorage whenever it changes
   useEffect(() => {
@@ -37,10 +128,12 @@ export default function CallTranscriptionApp({ onBack }) {
 
   const handleFeatureSelect = (feature) => {
     setSelectedFeature(feature);
+    navigate(`/call-recording/${feature.id}`);
   };
 
   const handleBackToFeatures = () => {
     setSelectedFeature(null);
+    navigate('/call-recording');
   };
 
   const handleFeatureResult = (featureId, result) => {

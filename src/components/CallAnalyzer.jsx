@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { FileText, Mail, Loader2, Copy, CheckCircle2, Sparkles, Zap } from 'lucide-react';
+import { FileText, Mail, Loader2, CheckCircle2, Sparkles, Zap } from 'lucide-react';
 import { useNeuralSeekAnalysis } from '../hooks/useNeuralSeekAnalysis';
+import EmailTemplate from './EmailTemplate';
 
 export default function CallAnalyzer({ transcript }) {
   const [emailRecipients, setEmailRecipients] = useState('');
-  const [copied, setCopied] = useState(false);
   const [showEmailGenerator, setShowEmailGenerator] = useState(false);
   const { analysis, isAnalyzing, error, analyze, reset } = useNeuralSeekAnalysis();
 
@@ -33,12 +33,6 @@ export default function CallAnalyzer({ transcript }) {
     } catch (err) {
       alert('Email generation failed: ' + err.message);
     }
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   if (!transcript.trim()) return null;
@@ -191,39 +185,14 @@ export default function CallAnalyzer({ transcript }) {
             </div>
           )}
 
-          {/* Email Body */}
+          {/* Email Template */}
           {analysis.emailBody && (
-            <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-600" />
-                  Follow-up Email
-                </h3>
-                <button
-                  onClick={() => copyToClipboard(analysis.emailBody)}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg font-medium transition-all ${
-                    copied
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {copied ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-              <div className="bg-white p-4 rounded-lg border border-gray-200 whitespace-pre-wrap text-sm text-gray-700 leading-relaxed font-mono">
-                {analysis.emailBody}
-              </div>
-            </div>
+            <EmailTemplate 
+              emailBody={analysis.emailBody}
+              emailRecipients={emailRecipients}
+              emailSubject={analysis.emailSubject}
+              emailTo={analysis.emailTo}
+            />
           )}
 
           {/* Action Buttons */}

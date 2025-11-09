@@ -1,4 +1,4 @@
-import { Mail, FileText, Map, TrendingUp, BarChart3, FileSpreadsheet, Calendar, Award, LineChart, Shield } from 'lucide-react';
+import { Mail, FileText, Map, TrendingUp, BarChart3, Award, LineChart, Shield } from 'lucide-react';
 
 const features = [
   {
@@ -42,22 +42,6 @@ const features = [
     iconColor: 'text-indigo-600'
   },
   {
-    id: 'call-notes',
-    title: 'Call Notes to Sheet',
-    description: 'Automatically extract structured call notes and export to Google Sheet format for easy analysis.',
-    icon: FileSpreadsheet,
-    color: 'from-teal-500 to-teal-600',
-    iconColor: 'text-teal-600'
-  },
-  {
-    id: 'call-prep',
-    title: 'Call Preparation',
-    description: 'Get automated account-specific intelligence and meeting summaries before important calls.',
-    icon: Calendar,
-    color: 'from-pink-500 to-pink-600',
-    iconColor: 'text-pink-600'
-  },
-  {
     id: 'call-scoring',
     title: 'Call Scoring',
     description: 'Performance score with talk-to-listen ratio, sentiment analysis, and targeted coaching suggestions.',
@@ -85,6 +69,12 @@ const features = [
 
 export default function FeaturesGrid({ onFeatureSelect, transcript }) {
   const handleFeatureClick = (feature) => {
+    // Pipeline analyzer doesn't require a transcript (uses CSV upload)
+    if (feature.id === 'pipeline-analyzer') {
+      onFeatureSelect(feature);
+      return;
+    }
+    
     if (!transcript.trim()) {
       alert('Please provide a transcript first');
       return;
@@ -99,21 +89,30 @@ export default function FeaturesGrid({ onFeatureSelect, transcript }) {
         <p className="text-gray-600">Select a feature to analyze your call transcript</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {features.map((feature) => {
           const Icon = feature.icon;
+          const isAvailable = transcript.trim() || feature.id === 'pipeline-analyzer';
           
           return (
             <button
               key={feature.id}
               onClick={() => handleFeatureClick(feature)}
-              disabled={!transcript.trim()}
+              disabled={!isAvailable}
               className={`
                 relative bg-white border-2 rounded-xl p-6 text-left transition-all transform hover:scale-105 active:scale-95
                 border-gray-200 hover:border-gray-300 hover:shadow-md
-                ${!transcript.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                ${!isAvailable ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >
+              {feature.id === 'pipeline-analyzer' && !transcript.trim() && (
+                <div className="absolute top-2 right-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    CSV Upload
+                  </span>
+                </div>
+              )}
+              
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 bg-gray-100">
                 <Icon className={`w-6 h-6 ${feature.iconColor}`} />
               </div>
@@ -133,7 +132,8 @@ export default function FeaturesGrid({ onFeatureSelect, transcript }) {
       {!transcript.trim() && (
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            💡 <strong>Tip:</strong> Record a call or paste a transcript above to use these features.
+            💡 <strong>Tip:</strong> Record a call or paste a transcript above to use most features. 
+            <span className="font-medium text-green-700"> Pipeline Momentum</span> can be used without a transcript (CSV upload).
           </p>
         </div>
       )}

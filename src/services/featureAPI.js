@@ -16,11 +16,11 @@ const getApiUrl = () => {
  */
 const featureConfigs = {
   'summarize': {
-    agent: 'summarize_agent', // Agent for summarization
+    agent: 'summary_agent', // Agent for summarization
     prompt: 'Summarize this call transcript with key highlights and main points.'
   },
   'generate-email': {
-    agent: 'pehla_agent', // Original email generation agent (correct one)
+    agent: 'email_agent', // Dedicated email generation agent
     prompt: 'Generate a professional follow-up email based on this call transcript.'
   },
   'heatmap': {
@@ -28,32 +28,24 @@ const featureConfigs = {
     prompt: 'Analyze this call transcript and create a talk track heatmap showing recurring topics, objections, and value propositions. Return as structured JSON with topics and their frequency.'
   },
   'feature-requests': {
-    agent: 'feature_request_agent', // Agent for feature request extraction
-    prompt: 'Extract and quantify product feature requests and enhancement discussions from this call transcript. Return as structured JSON with feature names and request frequency.'
+    agent: 'feedback_report_agent', // Agent for comprehensive feedback analysis
+    prompt: 'Analyze this call transcript and generate a comprehensive feedback report including: feature request leaderboard with frequencies, customer segment analysis, account tier analysis, and actionable insights. Return as structured JSON.'
   },
   'call-dashboard': {
-    agent: 'dashboard_agent', // Agent for call dashboard
-    prompt: 'Create a comprehensive call review dashboard for this transcript including: call summary, sentiment timeline, topic heatmap, action items, objections, and talk-to-listen ratio. Return as structured JSON.'
-  },
-  'call-notes': {
-    agent: 'notes_agent', // Agent for structured notes
-    prompt: 'Extract structured call notes from this transcript including: key discussion points, next steps, customer sentiment, and objections. Format as structured data suitable for CSV export.'
-  },
-  'call-prep': {
-    agent: 'prep_agent', // Agent for call preparation
-    prompt: 'Prepare call intelligence for this account including: high-level summary of meetings, open action items, recurring themes, and most recent meeting highlights with tone and next steps.'
+    agent: 'singleCallAgent', // Agent for comprehensive single call review
+    prompt: 'Create a comprehensive call review dashboard for this transcript including: call summary, sentiment timeline, topic heatmap, action items, and talk-to-listen ratio. Return as structured JSON.'
   },
   'call-scoring': {
-    agent: 'scoring_agent', // Agent for performance scoring
-    prompt: 'Score this call transcript on performance metrics including: talk-to-listen ratio, sentiment shifts, clarity of pitch, objection handling, and closing strength. Return as JSON with score, justification, and coaching suggestions.'
+    agent: 'call_scoring_agent', // Agent for comprehensive call performance scoring
+    prompt: 'Score this call transcript on performance metrics including: listening skills, tone, engagement, and overall performance. Return as JSON with score, justification (strengths and weaknesses), and coaching suggestions.'
   },
   'pipeline-analyzer': {
-    agent: 'pipeline_agent', // Agent for pipeline analysis
-    prompt: 'Analyze pipeline momentum from this call transcript. Identify deal activity patterns, velocity metrics, risks, and stage progression. Return as structured JSON.'
+    agent: 'revenue_intelligence_agent', // Agent for revenue intelligence and pipeline analysis
+    prompt: 'Analyze pipeline momentum and revenue intelligence from this data. Identify deal activity patterns, velocity metrics, risks, stage progression, and revenue forecasts. Generate a comprehensive summary report.'
   },
   'pii-wipe': {
-    agent: 'pii_agent', // Agent for PII redaction
-    prompt: 'Analyze this call transcript after redacting PII (personally identifiable information). Provide a secure summary with all sensitive data removed.'
+    agent: 'listener_agent', // Agent for PII redaction and structured analysis
+    prompt: 'Analyze this call transcript after redacting PII (personally identifiable information). Provide a secure, structured summary with all sensitive customer data removed, including CSR name, customer feedback by category, and CSR response.'
   }
 };
 
@@ -67,12 +59,24 @@ export async function analyzeFeature(featureId, transcript, additionalParams = {
     throw new Error(`Unknown feature: ${featureId}`);
   }
 
+  // Transcript validation - pipeline analyzer can have empty transcript initially
   if (!transcript || !transcript.trim()) {
-    throw new Error('Transcript is required');
+    if (featureId === 'pipeline-analyzer') {
+      // For pipeline analyzer, transcript can be empty (waiting for CSV upload)
+      // This is okay - it won't auto-process
+    } else {
+      throw new Error('Transcript is required');
+    }
   }
 
   try {
     const apiUrl = getApiUrl();
+    
+    console.log('Sending to backend:', {
+      agent: config.agent,
+      featureId: featureId,
+      transcriptLength: transcript?.length || 0
+    });
     
     // For now, we'll use the same NeuralSeek API endpoint
     // In the future, you can create feature-specific endpoints
