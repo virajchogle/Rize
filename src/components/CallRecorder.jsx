@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Mic, Square, Radio, Pause, Play, Volume2, AlertCircle } from 'lucide-react';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -8,10 +8,12 @@ export default function CallRecorder({ onTranscriptUpdate }) {
   const { transcript, isTranscribing, transcribeAudio, setTranscript } = useSpeechRecognition();
   const [showSystemAudioPrompt, setShowSystemAudioPrompt] = useState(false);
   const [hasSystemAudio, setHasSystemAudio] = useState(false);
+  const lastTranscriptRef = useRef('');
 
-  // Update transcript when it changes
+  // Update transcript when it changes (only if it's actually different)
   useEffect(() => {
-    if (transcript) {
+    if (transcript && transcript !== lastTranscriptRef.current) {
+      lastTranscriptRef.current = transcript;
       onTranscriptUpdate?.(transcript);
     }
   }, [transcript, onTranscriptUpdate]);
@@ -20,6 +22,7 @@ export default function CallRecorder({ onTranscriptUpdate }) {
     try {
       // Clear previous transcript
       setTranscript('');
+      lastTranscriptRef.current = ''; // Reset ref when clearing
       setShowSystemAudioPrompt(false);
       setHasSystemAudio(false);
       

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import CallRecorder from './CallRecorder';
@@ -119,12 +119,12 @@ export default function CallTranscriptionApp({ onBack, initialFeature }) {
     }
   }, [transcript]);
 
-  const handleTranscriptChange = (newTranscript) => {
+  // Use useCallback to prevent infinite loops in child components
+  const handleTranscriptChange = useCallback((newTranscript) => {
     setTranscript(newTranscript);
-    if (newTranscript.trim()) {
-      showToast('Transcript saved automatically', 'success', 2000);
-    }
-  };
+    // Only show toast for manual edits, not for every update from recorder
+    // This prevents excessive toast notifications during transcription
+  }, []);
 
   const handleFeatureSelect = (feature) => {
     setSelectedFeature(feature);
