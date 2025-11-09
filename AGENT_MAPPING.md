@@ -14,6 +14,7 @@ Each feature calls a specific NeuralSeek agent. Update the agent names in `src/s
 | `call-scoring` | Call Scoring | `call_scoring_agent` | ✅ Active |
 | `pipeline-analyzer` | Pipeline Momentum | `revenue_intelligence_agent` | ✅ Active |
 | `pii-wipe` | PII Wipe & Analyze | `listener_agent` | ✅ Active |
+| `tax-finder` | Tax Finder | `sales_tax_agent` | ✅ Active |
 
 ## How to Update Agent Names
 
@@ -48,10 +49,13 @@ Each feature calls a specific NeuralSeek agent. Update the agent names in `src/s
 - `call-scoring` uses `call_scoring_agent` (performance scoring with justification and coaching suggestions)
 - `pii-wipe` uses `listener_agent` (PII redaction with structured call summary by category)
 - `pipeline-analyzer` uses `revenue_intelligence_agent` (revenue intelligence with deal activity, velocity metrics, forecasts - accepts CSV data via callTranscript parameter)
+- `tax-finder` uses `sales_tax_agent` (comprehensive tax rate lookup for US addresses including state, county, city, school district, and special district taxes)
 - The backend automatically uses the agent specified in the frontend configuration
 - Fallback order: request agent → NEURALSEEK_AGENT env variable → pehla_agent
 
 ## Special Input Requirements
 
 - **`pipeline-analyzer`**: This agent analyzes CSV data containing deal information (deal names, stages, amounts, close dates, activities). Upload CSV files through the UI, and the CSV data is passed as `callTranscript` (just like all other agents). This feature does NOT auto-process on load - you must upload a CSV file to trigger analysis.
+
+- **`tax-finder`**: This agent looks up tax rates for US addresses. Enter a full address (including street, city, state, and ZIP code) through the UI, and the address is passed as `callTranscript` to the agent (which maps it to the `address` parameter). The agent returns comprehensive tax information including state income tax rates, county sales tax, city taxes, school district taxes, and special district taxes. This feature does NOT auto-process on load - you must enter an address to trigger the lookup.
 

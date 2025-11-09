@@ -9,7 +9,7 @@ import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
 
 // Import icons
-import { Mail, FileText, Map, TrendingUp, BarChart3, FileSpreadsheet, Calendar, Award, LineChart, Shield } from 'lucide-react';
+import { Mail, FileText, Map, TrendingUp, BarChart3, FileSpreadsheet, Calendar, Award, LineChart, Shield, Calculator } from 'lucide-react';
 
 // Feature definitions for lookup
 const features = [
@@ -82,6 +82,13 @@ const features = [
     icon: Shield,
     color: 'from-red-500 to-red-600',
     iconColor: 'text-red-600'
+  },
+  {
+    id: 'tax-finder',
+    title: 'Tax Finder',
+    icon: Calculator,
+    color: 'from-emerald-500 to-teal-600',
+    iconColor: 'text-emerald-600'
   }
 ];
 
@@ -164,8 +171,8 @@ export default function CallTranscriptionApp({ onBack, initialFeature }) {
       <div className="max-w-5xl mx-auto space-y-8">
         <Header onBack={onBack} showBack={!selectedFeature} />
         
-        {/* Show transcript at top when feature is selected */}
-        {selectedFeature && (
+        {/* Show transcript at top when feature is selected (except for features that don't use transcripts) */}
+        {selectedFeature && selectedFeature.id !== 'pipeline-analyzer' && selectedFeature.id !== 'tax-finder' && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Working with transcript:</h3>
             <TranscriptDisplay 

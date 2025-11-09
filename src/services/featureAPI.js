@@ -46,6 +46,10 @@ const featureConfigs = {
   'pii-wipe': {
     agent: 'listener_agent', // Agent for PII redaction and structured analysis
     prompt: 'Analyze this call transcript after redacting PII (personally identifiable information). Provide a secure, structured summary with all sensitive customer data removed, including CSR name, customer feedback by category, and CSR response.'
+  },
+  'tax-finder': {
+    agent: 'sales_tax_agent', // Agent for sales tax lookup by address
+    prompt: 'Look up comprehensive tax rates for this address.'
   }
 };
 
@@ -59,10 +63,10 @@ export async function analyzeFeature(featureId, transcript, additionalParams = {
     throw new Error(`Unknown feature: ${featureId}`);
   }
 
-  // Transcript validation - pipeline analyzer can have empty transcript initially
+  // Transcript validation - pipeline analyzer and tax-finder can have empty transcript initially
   if (!transcript || !transcript.trim()) {
-    if (featureId === 'pipeline-analyzer') {
-      // For pipeline analyzer, transcript can be empty (waiting for CSV upload)
+    if (featureId === 'pipeline-analyzer' || featureId === 'tax-finder') {
+      // For pipeline analyzer and tax-finder, transcript can be empty (waiting for CSV/address input)
       // This is okay - it won't auto-process
     } else {
       throw new Error('Transcript is required');

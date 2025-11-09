@@ -103,7 +103,6 @@ export default function App() {
           path="/call-recording/:featureId"
           element={<CallTranscriptionApp onBack={handleBack} />}
         />
-        <Route path="/tax-finder" element={<TaxFinder onBack={handleBack} />} />
 
         {/* Direct feature routes */}
         <Route
@@ -175,6 +174,15 @@ export default function App() {
             <CallTranscriptionApp
               onBack={handleBack}
               initialFeature="pii-wipe"
+            />
+          }
+        />
+        <Route
+          path="/tax-finder"
+          element={
+            <CallTranscriptionApp
+              onBack={handleBack}
+              initialFeature="tax-finder"
             />
           }
         />

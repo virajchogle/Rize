@@ -9,6 +9,7 @@ import SingleCallDashboard from './SingleCallDashboard';
 import CallScoring from './CallScoring';
 import PiiAnalysis from './PiiAnalysis';
 import PipelineMomentum from './PipelineMomentum';
+import TaxFinder from './TaxFinder';
 
 export default function FeatureView({ feature, transcript, onBack, cachedResult, onResult, onClearCache }) {
   const [result, setResult] = useState(cachedResult || null);
@@ -61,11 +62,30 @@ export default function FeatureView({ feature, transcript, onBack, cachedResult,
     }
   };
 
+  const handleTaxLookup = async (address) => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      console.log('Looking up tax for address:', address);
+      // Pass address as transcript (the agent will use it as the address parameter)
+      const data = await analyzeFeature(feature.id, address);
+      console.log('Tax lookup result received:', data);
+      setResult(data);
+      onResult(data); // Cache the result in parent
+    } catch (err) {
+      console.error('Tax lookup error:', err);
+      setError(err.message || 'Failed to lookup tax information');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Auto-process only if no cached result exists
-  // Skip auto-processing for pipeline-analyzer (requires CSV upload)
+  // Skip auto-processing for pipeline-analyzer (requires CSV upload) and tax-finder (requires address input)
   useEffect(() => {
-    if (feature.id === 'pipeline-analyzer') {
-      // Don't auto-process for pipeline analyzer - wait for CSV upload
+    if (feature.id === 'pipeline-analyzer' || feature.id === 'tax-finder') {
+      // Don't auto-process for pipeline analyzer and tax-finder - wait for user input
       return;
     }
     
@@ -94,8 +114,8 @@ export default function FeatureView({ feature, transcript, onBack, cachedResult,
         </div>
       </div>
 
-      {/* Processing State */}
-      {isProcessing && (
+      {/* Processing State - Hide for features with their own loaders */}
+      {isProcessing && feature.id !== 'pipeline-analyzer' && feature.id !== 'tax-finder' && (
         <div className="flex flex-col items-center justify-center py-12">
           <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
           <p className="text-gray-600 font-medium">Processing your transcript...</p>
@@ -134,8 +154,25 @@ export default function FeatureView({ feature, transcript, onBack, cachedResult,
         </div>
       )}
 
+      {/* Tax Finder Feature - Always show (doesn't require initial result) */}
+      {feature.id === 'tax-finder' && (
+        <div className="space-y-6">
+          <TaxFinder result={result} onLookup={handleTaxLookup} />
+          
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <button
+              onClick={onBack}
+              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+            >
+              Back to Features
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* All Other Features - Only show when there's a result */}
-      {feature.id !== 'pipeline-analyzer' && result && (
+      {feature.id !== 'pipeline-analyzer' && feature.id !== 'tax-finder' && result && (
         <div className="space-y-6">
           {/* Display result based on feature type */}
           {/* Call Summary Feature */}
